@@ -5,9 +5,11 @@ from openai import OpenAI
 from math import exp
 import numpy as np
 from utility.env_manager import get_env_manager
-env_manager = get_env_manager()
-client = OpenAI(api_key=env_manager['openai_keys']['OPENAI_API_KEY'])
+from dotenv import load_dotenv
 
+load_dotenv()
+env_manager = get_env_manager()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 def get_completion(
@@ -57,7 +59,7 @@ def file_reader(path: str, ) -> str:
     return system_message
             
 
-def generate_test_data(prompt: str, context: str, num_test_output: str) -> str:
+def generate_test_data(prompt: str, context: str, num_prompt: str) -> str:
     """Return the classification of the hallucination.
     @parameter prompt: the prompt to be completed.
     @parameter user_message: the user message to be classified.
@@ -68,7 +70,7 @@ def generate_test_data(prompt: str, context: str, num_test_output: str) -> str:
         [
             {
                 "role": "user", 
-                "content": prompt.replace("{context}", context).replace("{num_test_output}", num_test_output)
+                "content": prompt.replace("{context}", context).replace(" num_prompt}", num_prompt)
             }
         ],
         model=env_manager['vectordb_keys']['VECTORDB_MODEL'],
@@ -80,28 +82,29 @@ def generate_test_data(prompt: str, context: str, num_test_output: str) -> str:
     return system_msg
 
 
-def main(num_test_output: str):
+def main (num_prompt: str):
     context_message = file_reader("prompts/10_Academy_Cohort_A_Weekly_Challenge_Week_6.txt")
-    prompt_message = file_reader("prompts/data-generation-prompt.txt")
+    prompt_message = file_reader("prompts/prompt_genetation.txt")
     context = str(context_message)
     prompt = str(prompt_message)
-    test_data = generate_test_data(prompt, context, num_test_output)
-    def save_json(test_data) -> None:
+    prompt_message = generate_test_data(prompt, context, num_prompt)
+    def save_json(prompt_message) -> None:
         # Specify the file path
-        file_path = "test-dataset/test-data.json"
-        json_object = json.loads(test_data)
+        file_path = "test-dataset/prompt_data.json"
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        json_object = json.loads(prompt_message)
         with open(file_path, 'w') as json_file:
             json.dump(json_object, json_file, indent=4)
             
         print(f"JSON data has been saved to {file_path}")
 
-    save_json(test_data)
+    save_json(prompt_message)
 
     print("===========")
-    print("Test Data")
+    print("Prompts")
     print("===========")
-    print(test_data)
+    print(prompt_message)
 
 
 if __name__ == "__main__":
-    main("5") # n number of test data to generate
+    main("6") # n number of test data to generate

@@ -3,7 +3,6 @@ import sys
 from dotenv import load_dotenv
 load_dotenv(".env")
 
-
 class OPENAI_KEYS:
     def __init__(self):
         self.OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '') or None
